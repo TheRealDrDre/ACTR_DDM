@@ -51,25 +51,165 @@
 ;;; ==================================================================
 
 (clear-all)
-(define-model ddm
+(define-model 2afc
 
-(chunk-type response-mapping cue response)
-(chunk-type task state)   
+(sgp :esc t
+     :imaginal-activation 2
+     :visual-activation 1)
 
-(add-dm (a isa chunk)
-	(b isa chunk)
+(chunk-type (visual-choice (:include visual-object))
+	    kind)
+(chunk-type response-mapping kind cue response)
+(chunk-type task state criterion)   
+
+(add-dm (correct isa chunk)
+	(incorrect isa chunk)
+	(choice isa chunk)
+	;; States
 	(start isa chunk)
-	(sr1 isa response-mapping cue a response left)
-	(sr2 isa response-mapping cue b response right)
-	(task-goal isa task state start)
+	(check isa chunk)
+	(response isa chunk)
+	(response-mapping isa chunk)
+	;; Task rules
+	(sr1 isa response-mapping
+	     kind response-mapping
+	     cue correct
+	     response left)
+	(sr2 isa response-mapping
+	     kind response-mapping
+	     cue incorrect
+	     response right)
+	(2afc isa task
+	      state start
+	      criterion correct))
 
 
-)
+
 
 (p retrieve-response
    =goal>
-   isa task
-   state start
+     isa task
+     state start
+   =visual>
+     isa visual-choice
+     kind choice
    ?retrieval>
-   buffer empty
-   state free
+     buffer empty
+     state free
+==>
+   =visual>
+   =goal>
+     state check
+   +retrieval>
+     kind response-mapping
+   
+)
+
+;;; ------------------------------------------------------------------
+;;; CHECK PHASE
+;;; ------------------------------------------------------------------
+;;; General algorithm
+;;;
+;;;              (Correct?)
+;;;              /        \
+;;;            Yes        No
+;;;            /           \
+;;;        Respond      +Conflict+
+;;;                        / \
+;;;                       p  1-p
+;;;                      /     \
+;;;                  Restart  Respond
+;;;
+;;; ------------------------------------------------------------------
+
+(p proceed-correct
+   =goal>
+     isa task
+     state check
+     criterion =C
+   =visual>
+     isa visual-choice
+     kind choice
+   ?retrieval>
+     buffer full
+     state free
+   =retrieval>
+     kind response-mapping
+     cue =C
+==>
+   =goal>
+     state response
+   =retrieval>
+   =visual>
+)
+
+(p proceed-incorrect
+   =goal>
+     isa task
+     state check
+     criterion =C
+   =visual>
+     isa visual-choice
+     kind choice
+   ?retrieval>
+     buffer full
+     state free
+   =retrieval>
+     kind response-mapping
+   - cue =C
+==>
+   =goal>
+     state response
+   =retrieval>
+   =visual>
+   )
+
+(p restart
+   =goal>
+     isa task
+     state check
+     criterion =C
+   =visual>
+     isa visual-choice
+     kind choice
+   ?retrieval>
+     buffer full
+     state free
+   =retrieval>
+     kind response-mapping
+   - cue =C
+==>
+   =goal>
+     state start
+   -retrieval>
+   =visual>
+)
+
+;;; ------------------------------------------------------------------
+;;; RESPONSE
+;;; ------------------------------------------------------------------
+
+(p respond
+   =goal>
+     isa task
+     state response
+   ?retrieval>
+     buffer full
+     state free
+   =retrieval>
+     kind response-mapping
+     response =HAND
+   ?manual>
+     preparation free
+     processor free
+     execution free
+==>
+   +manual>
+     isa punch
+     finger index
+     hand =HAND
+)
+
+(goal-focus 2afc)
+
+) ; End of model
