@@ -29,8 +29,8 @@ steps:
       correctness criterion.
       1.  If a match is found, the model responds.
       2.  If not, the model either...
-           1.  restarts the search with probability 'p'
-           3.2.2.  responds anyway with probability (1 - p).
+           1.  Restarts the search with probability _p_
+           2.  Responds anyway with probability (1 - _p_).
 
 ## ACT-R Parameters
 
