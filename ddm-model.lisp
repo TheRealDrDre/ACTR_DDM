@@ -83,8 +83,28 @@
 	      state start
 	      criterion correct))
 
+;;; ------------------------------------------------------------------
+;;; ENCODING
+;;; ------------------------------------------------------------------
+;;; This production needs to fire only once; the model will
+;;; automatically re-encode the same location when the screen is
+;;; updated.
+;;; ------------------------------------------------------------------
 
-
+(p encode
+   =goal>
+     isa task
+     state start
+   ?visual>
+     buffer empty
+     state free
+==>
+   +visual-location>
+     kind choice
+)
+;;; ------------------------------------------------------------------
+;;; RESPONSE PHASE
+;;; ------------------------------------------------------------------
 
 (p retrieve-response
    =goal>
