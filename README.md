@@ -1,7 +1,8 @@
 # Comparing ACT-R to DDM
 
 A repository of code for a comparison of Ratcliff's Drift-Diffusion
-Model to an ACT-R model of choice.
+Model to an ACT-R model of choice. The ACT-R model implements a simple
+version of a one-stimulus, two-alternative forced choice (2AFC) task.
 
 ## 2AFC in DDM
 
@@ -32,7 +33,7 @@ steps:
            1.  Restarts the search with probability _p_
            2.  Responds anyway with probability (1 - _p_).
 
-## ACT-R Parameters
+### ACT-R Parameters
 
 The main parameters in the ACT-R implementation are:
   1.  _W_: the spreading activation from the internal correctness
