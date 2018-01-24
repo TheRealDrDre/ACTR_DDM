@@ -19,6 +19,8 @@
 
 (defparameter *verbose* nil "Flag for verbose output (for debugging") 
 
+(defparameter *utility-learning-enabled* nil "No learning for now")
+
 ;;; ------------------------------------------------------------------
 ;;; UTILITIES
 ;;; ------------------------------------------------------------------
@@ -162,9 +164,10 @@
       (when (act-r-loaded?)
 	(set-trial-response-time (current-trial task)
 				 (mp-time))
-	(if (= 1 (trial-accuracy (current-trial task)))
-	    (trigger-reward 1)
-	    (trigger-reward -1))
+	(when *utility-learning-enabled*
+	  (if (= 1 (trial-accuracy (current-trial task)))
+	      (trigger-reward 1)
+	      (trigger-reward -1)))
 	(schedule-event-relative 0 #'next :params (list task))))))
             
 
@@ -193,7 +196,7 @@
 ;;; ------------------------------------------------------------------
 ;;; ACT-R DEVICE INTERFACE
 ;;; ------------------------------------------------------------------
-;;; These functions turn the Simon-Task class into an ACT-R device
+;;; These functions turn the 2AFC-Task class into an ACT-R device
 ;;; ------------------------------------------------------------------
 
 (defmethod device-handle-keypress ((task 2afc-task) key)
@@ -231,7 +234,7 @@
 
 (defmethod build-vis-locs-for ((trial list) vismod)
   (let ((results nil))
-    (push  `(isa 2afc-stimulus-location 
+    (push  `(isa 2afc-location 
 		 kind 2afc-stimulus
 		 value stimulus
 		 color black
@@ -245,8 +248,8 @@
 
 (defmethod build-vis-locs-for ((phase symbol) vismod)
   (let ((results nil))
-    (push  `(isa simon-stimulus-location 
-		 kind screen
+    (push  `(isa 2afc-location 
+		 kind 2afc-location
 		 value ,phase
 		 color black
 		 screen-x 0
@@ -257,7 +260,34 @@
     (define-chunks-fct results)))
 
 
-(defun 2afc-reload (&optional (device (current-device)))
+(defmethod vis-loc-to-obj ((task 2afc-task) vis-loc)
+  "Transforms a visual-loc into a visual object"
+  (let ((new-chunk nil)
+	(phase (task-phase task)))
+    (if (equal phase 'stimulus)
+	(setf new-chunk (vis-loc-to-obj (current-trial task) vis-loc))
+	(setf new-chunk (vis-loc-to-obj phase vis-loc)))
+    (fill-default-vis-obj-slots new-chunk vis-loc)
+    new-chunk))
+
+
+(defmethod vis-loc-to-obj ((stimulus list) vis-loc)
+  "Transforms a stimulus into a visual object"
+  (first (define-chunks-fct 
+	     `((isa 2afc-object
+		    kind 2afc-stimulus 
+		    value ,(trial-stimulus stimulus)
+		    )))))
+
+(defmethod vis-loc-to-obj ((phase symbol) vis-loc)
+  "Transforms a stimulus into a visual object"
+  (first (define-chunks-fct 
+	     `((isa 2afc-object
+		    kind 2afc-screen 
+		    value ,phase
+		    )))))
+
+(defun 2afc-reload (&optional (device (make-instance '2afc-task)))
   "Reloads the current PSS model"
   (reload)
   (install-device device)

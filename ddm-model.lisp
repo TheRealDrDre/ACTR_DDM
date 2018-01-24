@@ -54,17 +54,26 @@
 (define-model 2afc
 
 (sgp :esc t
+     :auto-attend t
      :imaginal-activation 2
      :visual-activation 1)
 
-(chunk-type (visual-choice (:include visual-object))
+(chunk-type (2afc-object (:include visual-object))
 	    kind)
+(chunk-type (2afc-location (:include visual-location))
+	    kind nature)
 (chunk-type response-mapping kind cue response)
 (chunk-type task state criterion)   
 
-(add-dm (correct isa chunk)
+(add-dm (2afc-screen isa chunk)
+	(2afc-location isa chunk)
+	(2afc-stimulus isa chunk)
+	(pause isa chunk)
+
+	;; Stimuli
+        (correct isa chunk)
 	(incorrect isa chunk)
-	(choice isa chunk)
+	
 	;; States
 	(start isa chunk)
 	(check isa chunk)
@@ -100,7 +109,7 @@
      state free
 ==>
    +visual-location>
-     kind choice
+     kind 2afc-location
 )
 ;;; ------------------------------------------------------------------
 ;;; RESPONSE PHASE
@@ -111,8 +120,8 @@
      isa task
      state start
    =visual>
-     isa visual-choice
-     kind choice
+     isa 2afc-object
+     kind 2afc-stimulus
    ?retrieval>
      buffer empty
      state free
@@ -148,8 +157,8 @@
      state check
      criterion =C
    =visual>
-     isa visual-choice
-     kind choice
+     isa 2afc-object
+     kind 2afc-stimulus
    ?retrieval>
      buffer full
      state free
@@ -169,8 +178,8 @@
      state check
      criterion =C
    =visual>
-     isa visual-choice
-     kind choice
+     isa 2afc-object
+     kind 2afc-stimulus
    ?retrieval>
      buffer full
      state free
@@ -190,8 +199,8 @@
      state check
      criterion =C
    =visual>
-     isa visual-choice
-     kind choice
+     isa 2afc-object
+     kind 2afc-stimulus
    ?retrieval>
      buffer full
      state free
@@ -228,6 +237,8 @@
      isa punch
      finger index
      hand =HAND
+   =goal>
+     state start  
 )
 
 (goal-focus 2afc)
