@@ -74,8 +74,9 @@
   (member stim *stimuli*))
 
 (defun stimulus-correct-response (stim)
+  "The correct answers is always that associated with the 'correct' stimulus (in this case, always left)"
   (when (stimulus? stim)
-    (cdr (assoc stim *rules*))))
+    (cdr (assoc 'correct *rules*))))
 
 (defun make-trial (stim)
   (when (2afc-stimulus? stim)
@@ -286,6 +287,18 @@
 		    kind 2afc-screen 
 		    value ,phase
 		    )))))
+
+;;; ------------------------------------------------------------------
+;;; DATA FORMATTING
+;;; ------------------------------------------------------------------
+
+(defun format-results (device &optional (stream t))
+  (dolist (trial (reverse (experiment-log device)))
+    (format stream "~A,~A,~A~%"
+	    (trial-stimulus trial)
+	    (trial-rt trial)
+	    (trial-accuracy trial))))
+	    
 
 (defun 2afc-reload (&optional (device (make-instance '2afc-task)))
   "Reloads the current PSS model"

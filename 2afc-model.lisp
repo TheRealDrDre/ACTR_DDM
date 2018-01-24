@@ -55,8 +55,10 @@
 
 (sgp :esc t
      :auto-attend t
-     :imaginal-activation 2
-     :visual-activation 1)
+     :imaginal-activation 2.0
+     :visual-activation 1.0
+     :blc 5.0
+     :ans 2.0)
 
 (chunk-type (2afc-object (:include visual-object))
 	    kind)
@@ -125,6 +127,10 @@
    ?retrieval>
      buffer empty
      state free
+   ?manual>
+     preparation free
+     processor free
+     execution free
 ==>
    =visual>
    =goal>
