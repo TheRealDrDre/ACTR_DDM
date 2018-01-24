@@ -36,3 +36,4 @@
 			      `(mapcar 'mean ,@qres)))))
 
 	(reverse results))))
+
