@@ -292,13 +292,13 @@
 ;;; DATA FORMATTING
 ;;; ------------------------------------------------------------------
 
-(defun format-results (device &optional (stream t))
-  (dolist (trial (reverse (experiment-log device)))
-    (format stream "~A,~A,~A~%"
-	    (trial-stimulus trial)
-	    (trial-rt trial)
-	    (trial-accuracy trial))))
-	    
+(defun summarize-trial (trial)
+  (list (trial-stimulus trial)
+	(trial-accuracy trial)
+	(trial-rt trial)))
+
+(defun extract-results (device)
+  (mapcar #'summarize-trial (reverse (experiment-log device))))
 
 (defun 2afc-reload (&optional (device (make-instance '2afc-task)))
   "Reloads the current PSS model"
