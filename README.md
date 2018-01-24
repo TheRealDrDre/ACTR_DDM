@@ -42,12 +42,24 @@ The main parameters in the ACT-R implementation are:
   2.  _S_: The noise in declarative memory. This mimics the
       resistance to spreading activation.
   3.  _U_: The perceived utility of restarting the search process,
-      defined in terms of RL expected value V. This determines
+      defined in terms of RL expected value _V_. This determines
       the boundary parameter _a_.
 
-### 2AFC Task Interface
+### 2AFC Task Implementation
 
 The ACT-R device implements a minimal implementation of a 2AFC
 task. Specifically, the task contains only one stimulus, and two
-responses (``_left_'' and ``right'') are possible. By default, _left_
-is assumed to be the correct response.   
+responses (_left_ and _right_) are possible. By default, _left_
+is assumed to be the correct response. The stimulus presented is also
+the only visual object presented on the screen. The stimulus consists
+of a visual label, which can be either "correct" or "incorrect". The
+label itself is unimportant, as the correct response is always the
+same (_left_). This matches the DDM methods, where one boundary is
+assumed to be the correct response for all trials.
+
+The difference between "correct" and "incorrect" trials (or, if one
+prefers, the "correct", "neutral", and "incorrect" trials) has no
+effect until one turns on the `visual-activation` parameter in ACT-R,
+which enables preading activation. This would create competition for
+various responses.
+
