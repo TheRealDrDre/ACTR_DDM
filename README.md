@@ -45,4 +45,9 @@ The main parameters in the ACT-R implementation are:
       defined in terms of RL expected value V. This determines
       the boundary parameter _a_.
 
+### 2AFC Task Interface
 
+The ACT-R device implements a minimal implementation of a 2AFC
+task. Specifically, the task contains only one stimulus, and two
+responses (``_left_'' and ``right'') are possible. By default, _left_
+is assumed to be the correct response.   
