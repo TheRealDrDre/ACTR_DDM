@@ -268,7 +268,7 @@
     (if (equal phase 'stimulus)
 	(setf new-chunk (vis-loc-to-obj (current-trial task) vis-loc))
 	(setf new-chunk (vis-loc-to-obj phase vis-loc)))
-    (fill-default-vis-obj-slots new-chunk vis-loc)
+    ;(fill-default-vis-obj-slots new-chunk vis-loc)
     new-chunk))
 
 

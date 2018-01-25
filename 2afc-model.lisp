@@ -55,13 +55,14 @@
 
 (sgp :esc t
      :auto-attend t
-     :imaginal-activation 0.0
-     :visual-activation 10.0
+     :bll nil
+     :imaginal-activation 10.0
+     :visual-activation 0.0
      :blc 5.0
      :ans 2.0)
 
-(chunk-type (2afc-object (:include visual-object))
-	    kind)
+(chunk-type 2afc-object; (:include visual-object))
+	    kind value)
 (chunk-type (2afc-location (:include visual-location))
 	    kind nature)
 (chunk-type response-mapping kind cue response)
