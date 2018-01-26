@@ -311,7 +311,8 @@
       (let* ((subset (remove-if-not #'(lambda (x) (equal (first x) condition))
 				    real-results))
 	     (accuracies (mapcar #'second subset))
-	     (rts (mapcar #'third real-results)))
+	     (rts (mapcar #'third subset)))
+	(print subset)
 	(push (list condition
 		    (float (apply #'mean accuracies))
 		    (float (apply #'mean rts)))

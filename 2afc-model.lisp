@@ -59,8 +59,8 @@
      :er t
      :mas 1.69  ;; This is 1 + log(2), so that S - log(Sji) = 1. 
      :bll nil
-     :imaginal-activation 8.0
-     :visual-activation 1.5
+     :imaginal-activation 1.5
+     :visual-activation 1.0
      :ga 0.0
      :blc 1.0
      :ans 0.0001)
@@ -94,7 +94,6 @@
 	(response-mapping isa chunk)
 	
 	;; Task rules
-
 	(sr1 isa response-mapping
 	     kind response-mapping
 	     cue correct
@@ -150,8 +149,7 @@
    =goal>
      state check
    +retrieval>
-     kind response-mapping
-   
+     kind response-mapping   
 )
 
 ;;; ------------------------------------------------------------------
@@ -270,4 +268,5 @@
 (goal-focus 2afc)
 
 (set-buffer-chunk 'imaginal 'criterion) 
+
 ) ; End of model
