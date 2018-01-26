@@ -59,11 +59,11 @@
      :er t
      :mas 1.69  ;; This is 1 + log(2), so that S - log(Sji) = 1. 
      :bll nil
-     :imaginal-activation 1.5
+     :imaginal-activation 1.0
      :visual-activation 1.0
      :ga 0.0
      :blc 1.0
-     :ans 0.0001)
+     :ans 0.1)
 
 (chunk-type 2afc-object; (:include visual-object))
 	    kind value)
