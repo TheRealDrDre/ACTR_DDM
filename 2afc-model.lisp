@@ -51,28 +51,37 @@
 ;;; ==================================================================
 
 (clear-all)
+
 (define-model 2afc
 
 (sgp :esc t
      :auto-attend t
      :er t
+     :mas 1.69  ;; This is 1 + log(2), so that S - log(Sji) = 1. 
      :bll nil
-     :imaginal-activation 0.0
-     :visual-activation 0.0
-     :blc 5.0
-     :ans nil)
+     :imaginal-activation 8.0
+     :visual-activation 1.5
+     :ga 0.0
+     :blc 1.0
+     :ans 0.0001)
 
 (chunk-type 2afc-object; (:include visual-object))
 	    kind value)
+
 (chunk-type (2afc-location (:include visual-location))
 	    kind nature)
+
 (chunk-type response-mapping kind cue response)
-(chunk-type task state criterion)   
+
+(chunk-type task state)
+
+(chunk-type criterion criterion)
 
 (add-dm (2afc-screen isa chunk)
 	(2afc-location isa chunk)
 	(2afc-stimulus isa chunk)
 	(pause isa chunk)
+	(done isa chunk)
 
 	;; Stimuli
         (correct isa chunk)
@@ -83,7 +92,9 @@
 	(check isa chunk)
 	(response isa chunk)
 	(response-mapping isa chunk)
+	
 	;; Task rules
+
 	(sr1 isa response-mapping
 	     kind response-mapping
 	     cue correct
@@ -93,7 +104,8 @@
 	     cue incorrect
 	     response right)
 	(2afc isa task
-	      state start
+	      state start)
+	(criterion isa criterion 
 	      criterion correct))
 
 ;;; ------------------------------------------------------------------
@@ -163,6 +175,7 @@
    =goal>
      isa task
      state check
+   =imaginal>
      criterion =C
    =visual>
      isa 2afc-object
@@ -178,12 +191,14 @@
      state response
    =retrieval>
    =visual>
+   =imaginal>
 )
 
 (p proceed-incorrect
    =goal>
      isa task
      state check
+   =imaginal>
      criterion =C
    =visual>
      isa 2afc-object
@@ -199,12 +214,14 @@
      state response
    =retrieval>
    =visual>
+   =imaginal>
    )
 
 (p restart
    =goal>
      isa task
      state check
+   =imaginal>
      criterion =C
    =visual>
      isa 2afc-object
@@ -220,6 +237,7 @@
      state start
    -retrieval>
    =visual>
+   =imaginal>
 )
 
 ;;; ------------------------------------------------------------------
@@ -251,4 +269,5 @@
 
 (goal-focus 2afc)
 
+(set-buffer-chunk 'imaginal 'criterion) 
 ) ; End of model

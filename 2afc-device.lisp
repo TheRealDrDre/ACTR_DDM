@@ -300,6 +300,24 @@
 (defun extract-results (device)
   (mapcar #'summarize-trial (reverse (experiment-log device))))
 
+(defun summarize-results (results)
+  (let* ((n (length (first results)))
+	 (real-results (mapcar #'(lambda (x)
+				   (subseq x (- n 3)))
+			       results))
+	 (conditions (remove-duplicates (mapcar #'first real-results)))
+	 (summary nil))
+    (dolist (condition conditions summary)
+      (let* ((subset (remove-if-not #'(lambda (x) (equal (first x) condition))
+				    real-results))
+	     (accuracies (mapcar #'second subset))
+	     (rts (mapcar #'third real-results)))
+	(push (list condition
+		    (float (apply #'mean accuracies))
+		    (float (apply #'mean rts)))
+	      summary)))))
+
+
 (defun 2afc-reload (&optional (device (make-instance '2afc-task)))
   "Reloads the current PSS model"
   (reload)
