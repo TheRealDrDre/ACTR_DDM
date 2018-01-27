@@ -38,6 +38,6 @@
 		       :if-exists :overwrite
 		       :if-does-not-exist :create)
     (dolist (row table)
-      (format out "~{~a~^, ~}~%" row))))
+      (format out "~{~a~^,~}~%" row))))
 
 
