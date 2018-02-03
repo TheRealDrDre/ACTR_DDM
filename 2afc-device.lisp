@@ -78,7 +78,7 @@
 
 (defun stimulus-correct-response (stim)
   "The correct answers is always that associated with the 'correct' stimulus (in this case, always left)"
-  (when (stimulus? stim)
+  (when (2afc-stimulus? stim)
     'left))
 ;    (cdr (assoc 'correct *rules*))))
 
