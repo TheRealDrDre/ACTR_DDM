@@ -17,7 +17,7 @@
 ;;; ACT-R functions and parameters
 ;;; ------------------------------------------------------------------
 
-(defparameter *verbose* nil "Flag for verbose output (for debugging") 
+(defparameter *verbose* nil "Flag for verbose output (for debugging)") 
 
 (defparameter *utility-learning-enabled* nil "No learning for now")
 
@@ -28,6 +28,7 @@
 (defun act-r-loaded? ()
   "Checks whether ACTR is loaded"
   (member :act-r *features*))
+
 
 (defun pick (lst)
   "Picks up an element from a list"
@@ -42,6 +43,7 @@
     (let ((picked (pick lst)))
       (scramble (remove picked lst) (cons picked sofar)))))
 
+
 (defun scramble* (lst)
   "Scrambles any list of objects"
   (let ((l (length lst))
@@ -49,6 +51,7 @@
     (dotimes (i l)
       (push i pos))
     (mapcar #'(lambda (x) (elt lst x)) (scramble pos))))
+
 
 (defun mean (&rest nums)
   "Mean of a set of numbers"
@@ -64,19 +67,20 @@
 ;; Data structures and parameters for the task
 ;; ---------------------------------------------------------------- ;;
 
-(defparameter *stimuli* '(correct incorrect))
+(defparameter *stimuli* '(left right)) ;'(correct incorrect))
 
-(defparameter *rules* '((correct . left) (incorrect . right)))
+;;(defparameter *rules* '((correct . left) (incorrect . right)))
 
 (defparameter *responses* '((f . left) (j . right)))
 
-(defun stimulus? (stim)
+(defun 2afc-stimulus? (stim)
   (member stim *stimuli*))
 
 (defun stimulus-correct-response (stim)
   "The correct answers is always that associated with the 'correct' stimulus (in this case, always left)"
   (when (stimulus? stim)
-    (cdr (assoc 'correct *rules*))))
+    'left))
+;    (cdr (assoc 'correct *rules*))))
 
 (defun make-trial (stim)
   (when (2afc-stimulus? stim)
@@ -113,9 +117,10 @@
 (defun set-trial-actual-response (trial response)
   (setf (nth 4 trial) response))
 
-(defun generate-stimuli (&optional (n 100))
+(defun generate-stimuli (&optional (n 200))
   (let ((result nil))
-    (dolist (stim *stimuli* result)
+    ;;(dolist (stim *stimuli* result)
+    (dolist (stim '(right) result)
       (dotimes (i n)
 	(push stim result)))))
 
@@ -154,22 +159,6 @@
     (setf (current-trial task)
 	  (nth (index task) (trials task)))
     (setf (task-phase task) 'stimulus)))
-
-
-(defmethod respond ((task 2afc-task) key)
-  "Records a response in the PSS task"
-  (unless (null (current-trial task))
-    (let* ((trial (current-trial task))
-	   (response (cdr (assoc key *responses*))))
-      (set-trial-actual-response trial response)
-      (when (act-r-loaded?)
-	(set-trial-response-time (current-trial task)
-				 (mp-time))
-	(when *utility-learning-enabled*
-	  (if (= 1 (trial-accuracy (current-trial task)))
-	      (trigger-reward 1)
-	      (trigger-reward -1)))
-	(schedule-event-relative 0 #'next :params (list task))))))
             
 
 (defmethod next ((task 2afc-task))
@@ -193,6 +182,23 @@
 					(mp-time)))))))
   (when (act-r-loaded?) 
     (schedule-event-relative 0 'proc-display :params nil)))
+
+
+(defmethod respond ((task 2afc-task) key)
+  "Records a response in the PSS task"
+  (unless (null (current-trial task))
+    (let* ((trial (current-trial task))
+	   (response (cdr (assoc key *responses*))))
+      (set-trial-actual-response trial response)
+      (when (act-r-loaded?)
+	(set-trial-response-time (current-trial task)
+				 (mp-time))
+	(when *utility-learning-enabled*
+	  (if (= 1 (trial-accuracy (current-trial task)))
+	      (trigger-reward 1)
+	      (trigger-reward -1)))
+	(schedule-event-relative 0 #'next :params (list task))))))
+
 
 ;;; ------------------------------------------------------------------
 ;;; ACT-R DEVICE INTERFACE

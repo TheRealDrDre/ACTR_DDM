@@ -37,6 +37,12 @@
 ;;;            (c.2.1) restarts the search with probability 'p'
 ;;;            (c.2.2) responds anyway with probability (1 - p).
 ;;;
+;;; Stimuli in the model
+;;; --------------------
+;;; For simplicity, we will consider only conditions with
+;;; homogeneous stimuli. The stimuli will be "incongruent", that is,
+;;; internal control is required to retrieve the proper rule.
+;;;
 ;;; ACT-R Parameters
 ;;; ----------------
 ;;; The main parameters in the ACT-R implementation are:
@@ -60,7 +66,7 @@
      :mas 1.69  ;; This is 1 + log(2), so that S - log(Sji) = 1. 
      :bll nil
      :imaginal-activation 1.0
-     :visual-activation 1.0
+     :visual-activation 10.0
      :ga 0.0
      :blc 1.0
      :ans 0.1)
@@ -71,7 +77,7 @@
 (chunk-type (2afc-location (:include visual-location))
 	    kind nature)
 
-(chunk-type response-mapping kind cue response)
+(chunk-type response-mapping kind response)
 
 (chunk-type task state)
 
@@ -96,16 +102,16 @@
 	;; Task rules
 	(sr1 isa response-mapping
 	     kind response-mapping
-	     cue correct
+	     ;cue correct
 	     response left)
 	(sr2 isa response-mapping
 	     kind response-mapping
-	     cue incorrect
+	     ;cue incorrect
 	     response right)
 	(2afc isa task
 	      state start)
 	(criterion isa criterion 
-	      criterion correct))
+	      criterion left))
 
 ;;; ------------------------------------------------------------------
 ;;; ENCODING
@@ -183,7 +189,7 @@
      state free
    =retrieval>
      kind response-mapping
-     cue =C
+     response =C
 ==>
    =goal>
      state response
@@ -206,7 +212,7 @@
      state free
    =retrieval>
      kind response-mapping
-   - cue =C
+   - response =C
 ==>
    =goal>
      state response
@@ -229,7 +235,7 @@
      state free
    =retrieval>
      kind response-mapping
-   - cue =C
+   - response =C
 ==>
    =goal>
      state start

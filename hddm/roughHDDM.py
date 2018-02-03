@@ -3,7 +3,8 @@
 import hddm
 import matplotlib.pyplot as plt
 
-folder = '/home/ausmanpa/Documents/gp/ACTR_DDM/simulations/'
+#folder = '/home/ausmanpa/Documents/gp/ACTR_DDM/simulations/'
+folder = '/actr/models/ACTR_DDM/simulations/'
 fname = 'test.csv'
 
 data = hddm.load_csv(folder+fname)
@@ -16,6 +17,8 @@ hddmData = data.rename(index=str, columns={'idx':'subj_idx',
                                 colNames[3]:colNames[3][1:],
                                 colNames[4]:colNames[4][1:],
                                 colNames[5]:colNames[5][1:]})
+
+print(hddmData)
 
 #let's plot correct and error RT distributions first
 rtDistData = hddm.utils.flip_errors(hddmData)
@@ -42,7 +45,7 @@ models=[]
 for i in range(5):
     m = hddm.HDDM(hddmData, depends_on={'v':'stim'})
     m.find_starting_values()
-    m.sample(2000,burn=20)
+    m.sample(1000,burn=10)
     models.append(m)
     
 hddm.analyze.gelman_rubin(models)
