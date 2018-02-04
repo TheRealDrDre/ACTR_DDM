@@ -8,26 +8,28 @@
 # ------------------------------------------------------------------ #
 
 import numpy as np
+import sys
 
 class ParamRange():
     def __init__(self, name, start, end, step):
-        if is_param_name(name) and \\
-           is_param_value(start) and \\
-           is_param_value(end) and \\
-           is_param_value(step):
+        if self.is_param_name(name)        \
+           and self.is_param_value(start)  \
+           and self.is_param_value(end)    \
+           and self.is_param_value(step)   \
+           and float(end) > float(start):
 
             self.name = name
-            self.start = start
-            self.end = end
-            self.step = step
+            self.start = float(start)
+            self.end = float(end)
+            self.step = float(step)
 
         else:
             pass
         
 
     def is_param_name(self, string):
-        if and isintance(string, str) \\
-           and len(string) > 1 \\
+        if isinstance(string, str) \
+           and len(string) > 1    \
            and string[0:1] is ":" :
 
             return True
@@ -37,21 +39,22 @@ class ParamRange():
 
     def is_param_value(self, string):
         try: 
-            float(s)
+            float(string)
             return True
         except ValueError:
             return False
 
 
-    def as_list(self):
+    def expand(self):
         """Returns the range as a list"""
-        
-    
+        return list(np.arange(self.start, self.end, self.step))
+
+
 def load_params(filename="params.txt"):
     """Loads the param specification and creates the hyperspace"""
     fin = open(filename, 'r')
     params = []
-    for i in fin.xreadlines():
+    for i in fin.readlines():
         # Remove comments that start with '#';
         var = i
         if "#" in var:
@@ -59,9 +62,28 @@ def load_params(filename="params.txt"):
         var = var.split()
         var = [x.strip() for x in var]
 
-        params.append(ParamRange(var))
+        candidate = ParamRange(var[0], var[1], var[2], var[3])
+        if candidate is None:
+            print("Error in line: ``%s''', no parameter created")
+        else:
+            params.append(candidate)
     return [x for x in params if x is not None]
 
-        
-    
+def HyperPoint():
+    """Hyperpoint in parameter space"""
+    pass
 
+def HyperSpace():
+    """Hyper parameter space"""
+    def __init__(self, lst):
+        self.params = lst
+
+    def get_points(self):
+        
+
+
+if __name__ == "__main__":
+    params = load_params(sys.argv[1])
+    for p in params:
+        print("%s: %s" % (p.name, p.expand()))
+        
