@@ -69,15 +69,61 @@ def load_params(filename="params.txt"):
             params.append(candidate)
     return [x for x in params if x is not None]
 
-def HyperPoint():
+class HyperPoint():
     """Hyperpoint in parameter space"""
     def __init__(self, parameters, values):
-        self.internal = zip(parameters, values)
+        self._internal = dict(zip(parameters, values))
 
+    def __repr__(self):
+        return self.lisp_representation()
+
+    def __str__(self):
+        return self.__repr__()
+    
     def lisp_representation(self):
+        """Returns a string representing the HP in Lisp notation"""
+        string = "("
+        params = list(self._internal.keys())
+        params.sort()
+        for k in params[:-1]:
+            v = self._internal[k]  # The value
+            string += "(%s %.3f) " % (k, v)
         
+        string += "(%s %.3f))" % (params[-1], self._internal[params[-1]])
+        return string
 
-def HyperSpace():
+    
+def cmbn(lst1, lst2):
+    res = []
+    for a in lst1:
+        for b in lst2:
+            partial = []
+            if isinstance(a, list) and isinstance(b, list):
+                partial = a + b
+
+            elif isinstance(a, list) and not isinstance(b, list):
+                partial = a + [b]
+
+            elif not isinstance(a, list) and isinstance(b, list):
+                partial = [a] + b
+
+            elif not isinstance(a, list) and not isinstance(b, list):
+                partial = [a, b]
+            
+            res.append(partial)
+    return res
+
+def combinations(lst):
+    if len(lst) > 0:
+        res = lst[0]
+        for axis in lst[1:]:
+            res = cmbn(res, axis)
+        return res
+    else:
+        return []
+            
+    
+class HyperSpace():
     """Hyper parameter space"""
     def __init__(self, lst):
         self.params = lst
@@ -85,6 +131,7 @@ def HyperSpace():
     def get_points(self):
         """Returns this hyperspace as a list of hyperpoints"""
         pass
+    
 
     # Here we should include a function to chop
     # the space into N subspaces, cut somehow.
