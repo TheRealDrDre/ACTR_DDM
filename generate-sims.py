@@ -79,7 +79,16 @@ def HyperSpace():
         self.params = lst
 
     def get_points(self):
-        
+        pass
+
+    # Here we should include a function to chop
+    # the space into N subspaces, cut somehow.
+    # Or we should include a function to "cut across"
+    # N possible dimensions, simulating across all
+    # the others
+    #
+    # e.g. - cut_across([param1, param2, ..., paramN])
+    #  --> N smaller hyperspaces
 
 
 if __name__ == "__main__":
