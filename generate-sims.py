@@ -71,7 +71,11 @@ def load_params(filename="params.txt"):
 
 def HyperPoint():
     """Hyperpoint in parameter space"""
-    pass
+    def __init__(self, parameters, values):
+        self.internal = zip(parameters, values)
+
+    def lisp_representation(self):
+        
 
 def HyperSpace():
     """Hyper parameter space"""
@@ -79,6 +83,7 @@ def HyperSpace():
         self.params = lst
 
     def get_points(self):
+        """Returns this hyperspace as a list of hyperpoints"""
         pass
 
     # Here we should include a function to chop
@@ -89,7 +94,9 @@ def HyperSpace():
     #
     # e.g. - cut_across([param1, param2, ..., paramN])
     #  --> N smaller hyperspaces
-
+    def cut_across(param_list):
+        """Returns a series of hyperspaces across the values of given params"""
+        pass
 
 if __name__ == "__main__":
     params = load_params(sys.argv[1])
