@@ -114,6 +114,7 @@ def cmbn(lst1, lst2):
     return res
 
 def combinations(lst):
+    """Returns the permiutations of all the lists in LST"""
     if len(lst) > 0:
         res = lst[0]
         for axis in lst[1:]:
@@ -144,7 +145,11 @@ class HyperSpace():
     def cut_across(param_list):
         """Returns a series of hyperspaces across the values of given params"""
         pass
-
+    
+    def divide_into(n):
+        """Attempts to devide the parameter space into N subspaces"""
+        pass
+    
 if __name__ == "__main__":
     params = load_params(sys.argv[1])
     for p in params:
