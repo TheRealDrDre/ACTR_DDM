@@ -74,11 +74,27 @@ class HyperPoint():
     def __init__(self, parameters, values):
         self._internal = dict(zip(parameters, values))
 
+    def add_dimension(self, name, value):
+        """Adds a dimension (parameter) to the hyperpoint"""
+        if name not in self._internal.keys():
+            self._internal[name] = value
+
+    def get_dimensions(self):
+        """Returns the names of all dimensions"""
+        res = list(self._internal.keys())
+        res.sort()
+        return res
+            
+    def get_dimension_value(self, name):
+        if name in self._internal.keys():
+            return self._internal[name]
+    
     def __repr__(self):
         return self.lisp_representation()
 
     def __str__(self):
         return self.__repr__()
+
     
     def lisp_representation(self):
         """Returns a string representing the HP in Lisp notation"""
@@ -91,6 +107,17 @@ class HyperPoint():
         
         string += "(%s %.3f))" % (params[-1], self._internal[params[-1]])
         return string
+
+    
+    def belongs_to_hyperplane(self, hyperplane):
+        """
+A point belongs to an hyperplane if it contains all the dimensions 
+and values of the plane.
+        """
+        for p in hyperplane.get_dimensions():
+            if self.get_dimension_value(p) != hyperplane.get_dimension_value(p):
+                return False
+        return True
 
     
 def cmbn(lst1, lst2):
@@ -112,6 +139,7 @@ def cmbn(lst1, lst2):
             
             res.append(partial)
     return res
+
 
 def combinations(lst):
     """Returns the permiutations of all the lists in LST"""
