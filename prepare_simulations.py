@@ -16,8 +16,8 @@ class ParamRange():
            and self.is_param_value(start)  \
            and self.is_param_value(end)    \
            and self.is_param_value(step)   \
-           and float(end) > float(start):
-
+           and float(end) >= float(start):
+            print("Creating...")
             self.name = name
             self.start = float(start)
             self.end = float(end)
@@ -44,7 +44,12 @@ class ParamRange():
         except ValueError:
             return False
 
+    def __repr__(self):
+        return "<PR: '%s' (%.3f, %.3f, %.3f)>" % (self.name, self.start, self.end, self.step)
 
+    def __str__(self):
+        return self.__repr__()
+    
     def expand(self):
         """Returns the range as a list"""
         return list(np.arange(self.start, self.end, self.step))
@@ -142,7 +147,7 @@ def cmbn(lst1, lst2):
 
 
 def combinations(lst):
-    """Returns the permiutations of all the lists in LST"""
+    """Returns the permutations of all the lists in LST"""
     if len(lst) > 0:
         res = lst[0]
         for axis in lst[1:]:
@@ -155,11 +160,17 @@ def combinations(lst):
 class HyperSpace():
     """Hyper parameter space"""
     def __init__(self, lst):
-        self.params = lst
+        # List of param ranges
+        q = [x for x in lst if isinstance(x, ParamRange)]
+        self.params = q
 
     def get_points(self):
         """Returns this hyperspace as a list of hyperpoints"""
-        pass
+        names = [p.name for p in self.params]
+        values = [p.expand() for p in self.params]
+        points = combinations(values)
+        return [HyperPoint(names, coordinates) for coordinates in points]
+        
     
 
     # Here we should include a function to chop
@@ -177,6 +188,10 @@ class HyperSpace():
     def divide_into(n):
         """Attempts to devide the parameter space into N subspaces"""
         pass
+
+def generate_list_file():
+    """Generates a LISP file for simulations"""
+    
     
 if __name__ == "__main__":
     params = load_params(sys.argv[1])
