@@ -65,7 +65,7 @@
   "Writes a list of trials (formatted as in 'extract-results') in a CSV file"
   (with-open-file (out filename
 		       :direction :output
-		       :if-exists :overwrite
+		       :if-exists :append
 		       :if-does-not-exist :create)
     (dolist (row table)
       (format out "~{~a~^,~}~%" row))))
