@@ -9,6 +9,23 @@
 
 import numpy as np
 import sys
+import string
+
+LISP_INTRO = """
+(load "/actr/actr7/load-act-r.lisp")
+(load "2afc-device.lisp")
+(load "2afc-model.lisp")
+(load "2afc-simulations.lisp")
+"""
+LISP_SIMS = """
+(2afc-reload)
+(simulate %d :params %s :start %d :filename %s)
+"""
+
+LISP_END = """
+;;; Quit simulations
+(quit)
+"""
 
 class ParamRange():
     def __init__(self, name, start, end, step):
@@ -17,7 +34,7 @@ class ParamRange():
            and self.is_param_value(end)    \
            and self.is_param_value(step)   \
            and float(end) >= float(start):
-            print("Creating...")
+            #print("Creating...")
             self.name = name
             self.start = float(start)
             self.end = float(end)
@@ -100,7 +117,24 @@ class HyperPoint():
     def __str__(self):
         return self.__repr__()
 
+    def sanitize(self, name):
+        """Removes non-printable letters from name"""
+        return "".join([x.lower() for x in name if x in string.ascii_letters or x in string.digits])
+        
     
+    def simulations_filename(self, model="model"):
+        """Generates the name of an output file"""
+        params = list(self._internal.keys())
+        params.sort()
+        fname = model + "_"
+        for p in params[:-1]:
+            fname += ("%s_%.3f_" % (self.sanitize(p),
+                                    self._internal[p]))
+        fname += ("%s_%.3f" % (self.sanitize(params[-1]),
+                                self._internal[params[-1]]))
+        fname += ".txt"
+        return fname
+        
     def lisp_representation(self):
         """Returns a string representing the HP in Lisp notation"""
         string = "("
@@ -189,9 +223,7 @@ class HyperSpace():
         """Attempts to devide the parameter space into N subspaces"""
         pass
 
-def generate_list_file():
-    """Generates a LISP file for simulations"""
-    
+
     
 if __name__ == "__main__":
     params = load_params(sys.argv[1])
