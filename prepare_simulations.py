@@ -27,7 +27,61 @@ LISP_END = """
 (quit)
 """
 
+def load_params(filename="params.txt"):
+    """Loads the param specification and creates the hyperspace"""
+    fin = open(filename, 'r')
+    params = []
+    for i in fin.readlines():
+        # Remove comments that start with '#';
+        var = i
+        if "#" in var:
+            var = var[0:var.index("#")]
+        var = var.split()
+        var = [x.strip() for x in var]
+
+        candidate = ParamRange(var[0], var[1], var[2], var[3])
+        if candidate is None:
+            print("Error in line: ``%s''', no parameter created")
+        else:
+            params.append(candidate)
+    return [x for x in params if x is not None]
+
+
+    
+def cmbn(lst1, lst2):
+    res = []
+    for a in lst1:
+        for b in lst2:
+            partial = []
+            if isinstance(a, list) and isinstance(b, list):
+                partial = a + b
+
+            elif isinstance(a, list) and not isinstance(b, list):
+                partial = a + [b]
+
+            elif not isinstance(a, list) and isinstance(b, list):
+                partial = [a] + b
+
+            elif not isinstance(a, list) and not isinstance(b, list):
+                partial = [a, b]
+            
+            res.append(partial)
+    return res
+
+
+def combinations(lst):
+    """Returns the permutations of all the lists in LST"""
+    if len(lst) > 0:
+        res = lst[0]
+        for axis in lst[1:]:
+            res = cmbn(res, axis)
+        return res
+    else:
+        return []
+
+
 class ParamRange():
+    """Defines a parameter range in abstract terms"""
     def __init__(self, name, start, end, step):
         if self.is_param_name(name)        \
            and self.is_param_value(start)  \
@@ -72,24 +126,18 @@ class ParamRange():
         return list(np.arange(self.start, self.end, self.step))
 
 
-def load_params(filename="params.txt"):
-    """Loads the param specification and creates the hyperspace"""
-    fin = open(filename, 'r')
-    params = []
-    for i in fin.readlines():
-        # Remove comments that start with '#';
-        var = i
-        if "#" in var:
-            var = var[0:var.index("#")]
-        var = var.split()
-        var = [x.strip() for x in var]
-
-        candidate = ParamRange(var[0], var[1], var[2], var[3])
-        if candidate is None:
-            print("Error in line: ``%s''', no parameter created")
-        else:
-            params.append(candidate)
-    return [x for x in params if x is not None]
+# --------------------------------------------------------------------
+# The Hyper Point
+# --------------------------------------------------------------------
+# The Hyperpoint is the core of a set of simulations. Essentially,
+# the code that is generated will simulate and run N subjects that are
+# "clones" of each other in a parameter sense --- that is, they all
+# share the same parameter values, as specified by the hyperpoint
+# dimensions.
+# The hyperpoint class contains functions to handle and sort,
+# dimensions, as well as functions to generate corresponding Lisp
+# code.
+# --------------------------------------------------------------------
 
 class HyperPoint():
     """Hyperpoint in parameter space"""
@@ -108,21 +156,23 @@ class HyperPoint():
         return res
             
     def get_dimension_value(self, name):
-        if name in self._internal.keys():
+        if name in list(self._internal.keys()):
             return self._internal[name]
     
     def __repr__(self):
+        """String representation of the hyperpoint (in Lisp style)""" 
         return self.lisp_representation()
 
     def __str__(self):
+        """String representation of the hyperpoint (in Lisp style)"""
         return self.__repr__()
 
     def sanitize(self, name):
-        """Removes non-printable letters from name"""
+        """Removes non-printable letters from name string"""
         return "".join([x.lower() for x in name if x in string.ascii_letters or x in string.digits])
         
     
-    def simulations_filename(self, model="model"):
+    def filename(self, model="model"):
         """Generates the name of an output file"""
         params = list(self._internal.keys())
         params.sort()
@@ -158,37 +208,6 @@ and values of the plane.
                 return False
         return True
 
-    
-def cmbn(lst1, lst2):
-    res = []
-    for a in lst1:
-        for b in lst2:
-            partial = []
-            if isinstance(a, list) and isinstance(b, list):
-                partial = a + b
-
-            elif isinstance(a, list) and not isinstance(b, list):
-                partial = a + [b]
-
-            elif not isinstance(a, list) and isinstance(b, list):
-                partial = [a] + b
-
-            elif not isinstance(a, list) and not isinstance(b, list):
-                partial = [a, b]
-            
-            res.append(partial)
-    return res
-
-
-def combinations(lst):
-    """Returns the permutations of all the lists in LST"""
-    if len(lst) > 0:
-        res = lst[0]
-        for axis in lst[1:]:
-            res = cmbn(res, axis)
-        return res
-    else:
-        return []
             
     
 class HyperSpace():
