@@ -10,6 +10,8 @@
 import numpy as np
 import sys
 import string
+import functools
+import operator
 
 LISP_INTRO = """
 (load "/actr/actr7/load-act-r.lisp")
@@ -18,7 +20,7 @@ LISP_INTRO = """
 (load "2afc-simulations.lisp")
 """
 LISP_SIMS = """
-(simulate %d :params %s :start %d :filename "%s")
+(simulate %d :params '%s :start %d :filename "%s")
 """
 
 LISP_END = """
@@ -255,42 +257,68 @@ and values of the plane.
                 return False
         return True
 
+# --------------------------------------------------------------------
+# HyperSpace
+# --------------------------------------------------------------------
+# A hyperspace is an abstract representation of a collection of
+# HyperPoints. The HyperSpace class supports code generations to
+# simulate all the points in the hyperspace, as well as code to divide
+# the HyperSpace into subregions.
+# --------------------------------------------------------------------
             
     
 class HyperSpace():
     """Hyper parameter space"""
-    def __init__(self, plist, num = 100, model = "model"):
+    def __init__(self, plist, num = 100, start = 0, model = "model"):
         self.params = plist
         self.num = num
+        self.start = start
         self.model = model
-
 
     @property
     def params(self):
-        return self.params
+        """The list of parameters of the hyperspace"""
+        return self._params
 
     @params.setter
     def params(self, lst):
+        """Sets the list of parameters. only ParamRange objects are accepted"""
         P = [x for x in lst if isinstance(x, ParamRange)]
         self._params = P
         
     @property
     def num(self):
+        """The number of simulations"""
         return self._num
 
     @num.setter
     def num(self, val):
+        """Sets the number of simulations. Only int vals are accepted"""
         if isinstance(val, int):
             self._num = val
 
     @property
+    def start(self):
+        """Returns the starting ID for a simulation"""
+        return self._start
+
+    @start.setter
+    def start(self, val):
+        """Sets the starting ID for a simulation"""
+        if isinstance(val, int):
+            self._start = val
+
+            
+    @property
     def model(self):
+        """The model name"""
         return self._model
 
     @model.setter
     def model(self, name):
+        """Sets the model name"""
         if isinstance(name, str):
-            self._model = nam
+            self._model = name
 
     @property
     def points(self):
@@ -301,12 +329,18 @@ class HyperSpace():
         P = [HyperPoint(names, coordinates, num = self.num, model = self.model) for coordinates in points]
 
         # Give each point a unique start 
-        j = 0
+        j = self.start
         for p in P:
             p.start = j
             j += self.num
-        
+
+        return P
     
+    @property
+    def size(self):
+        """Returns the number of points in the hyperspace"""
+        sizes = [len(x.expand()) for x in self.params]
+        return functools.reduce(operator.mul, sizes) 
 
     # Here we should include a function to chop
     # the space into N subspaces, cut somehow.
@@ -327,7 +361,11 @@ class HyperSpace():
     @property
     def code(self):
         """Generates the code that explores the entire hyperspace"""
-        
+        res = LISP_INTRO
+        for p in self.points:
+            res += p.lisp_code
+        res += LISP_END
+        return res
 
 
 # --------------------------------------------------------------------
