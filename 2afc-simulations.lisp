@@ -26,7 +26,7 @@
 					    
     (dotimes (i n (append (list colnames) (reverse results)))
       (let ((p (make-instance '2afc-task)))
-	(suppress-warnings (reload))
+	;;(suppress-warnings (reload))
 	(2afc-reload p)
 	(sgp :v nil
 	     :style-warnings nil

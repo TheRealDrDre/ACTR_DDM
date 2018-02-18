@@ -18,8 +18,7 @@ LISP_INTRO = """
 (load "2afc-simulations.lisp")
 """
 LISP_SIMS = """
-(2afc-reload)
-(simulate %d :params %s :start %d :filename %s)
+(simulate %d :params %s :start %d :filename "%s")
 """
 
 LISP_END = """
@@ -141,42 +140,83 @@ class ParamRange():
 
 class HyperPoint():
     """Hyperpoint in parameter space"""
-    def __init__(self, parameters, values):
+    def __init__(self,
+                 parameters,
+                 values,
+                 num = 100,
+                 start = 0,
+                 model="model"):
         self._internal = dict(zip(parameters, values))
+        self.num = num
+        self.start = start
+        self.model = model
 
+        
     def add_dimension(self, name, value):
         """Adds a dimension (parameter) to the hyperpoint"""
         if name not in self._internal.keys():
             self._internal[name] = value
 
+    @property
+    def num(self):
+        return self._num
+
+    @num.setter
+    def num(self, val):
+        if isinstance(val, int):
+            self._num = val
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, val):
+        if isinstance(val, int):
+            self._start = val
+
+    @property
+    def model(self):
+        return self._model
+
+    @model.setter
+    def model(self, name):
+        if isinstance(name, str):
+            self._model = name
+            
     def get_dimensions(self):
         """Returns the names of all dimensions"""
         res = list(self._internal.keys())
         res.sort()
         return res
-            
+
+    
     def get_dimension_value(self, name):
         if name in list(self._internal.keys()):
             return self._internal[name]
-    
+
+        
     def __repr__(self):
         """String representation of the hyperpoint (in Lisp style)""" 
         return self.lisp_representation()
 
+    
     def __str__(self):
         """String representation of the hyperpoint (in Lisp style)"""
         return self.__repr__()
 
+    
     def sanitize(self, name):
         """Removes non-printable letters from name string"""
         return "".join([x.lower() for x in name if x in string.ascii_letters or x in string.digits])
         
-    
-    def filename(self, model="model"):
+
+    @property
+    def filename(self):
         """Generates the name of an output file"""
         params = list(self._internal.keys())
         params.sort()
-        fname = model + "_"
+        fname = self.model + "_"
         for p in params[:-1]:
             fname += ("%s_%.3f_" % (self.sanitize(p),
                                     self._internal[p]))
@@ -184,7 +224,8 @@ class HyperPoint():
                                 self._internal[params[-1]]))
         fname += ".txt"
         return fname
-        
+
+
     def lisp_representation(self):
         """Returns a string representing the HP in Lisp notation"""
         string = "("
@@ -196,6 +237,12 @@ class HyperPoint():
         
         string += "(%s %.3f))" % (params[-1], self._internal[params[-1]])
         return string
+
+
+    @property
+    def lisp_code(self):
+        """Generates the lisp code that examines this point in parameter space"""
+        return LISP_SIMS % (self.num, self, self.start, self.filename)
 
     
     def belongs_to_hyperplane(self, hyperplane):
@@ -212,17 +259,52 @@ and values of the plane.
     
 class HyperSpace():
     """Hyper parameter space"""
-    def __init__(self, lst):
-        # List of param ranges
-        q = [x for x in lst if isinstance(x, ParamRange)]
-        self.params = q
+    def __init__(self, plist, num = 100, model = "model"):
+        self.params = plist
+        self.num = num
+        self.model = model
 
-    def get_points(self):
+
+    @property
+    def params(self):
+        return self.params
+
+    @params.setter
+    def params(self, lst):
+        P = [x for x in lst if isinstance(x, ParamRange)]
+        self._params = P
+        
+    @property
+    def num(self):
+        return self._num
+
+    @num.setter
+    def num(self, val):
+        if isinstance(val, int):
+            self._num = val
+
+    @property
+    def model(self):
+        return self._model
+
+    @model.setter
+    def model(self, name):
+        if isinstance(name, str):
+            self._model = nam
+
+    @property
+    def points(self):
         """Returns this hyperspace as a list of hyperpoints"""
         names = [p.name for p in self.params]
         values = [p.expand() for p in self.params]
         points = combinations(values)
-        return [HyperPoint(names, coordinates) for coordinates in points]
+        P = [HyperPoint(names, coordinates, num = self.num, model = self.model) for coordinates in points]
+
+        # Give each point a unique start 
+        j = 0
+        for p in P:
+            p.start = j
+            j += self.num
         
     
 
@@ -242,8 +324,24 @@ class HyperSpace():
         """Attempts to devide the parameter space into N subspaces"""
         pass
 
+    @property
+    def code(self):
+        """Generates the code that explores the entire hyperspace"""
+        
 
-    
+
+# --------------------------------------------------------------------
+# TEST
+# --------------------------------------------------------------------
+k1 = ParamRange(":A", 0, 1, 0.1)
+k2 = ParamRange(":B", -2, 2, 0.5)
+h = HyperSpace([k1, k2])
+p = h.points
+
+# --------------------------------------------------------------------
+# When executing it as a script
+# --------------------------------------------------------------------
+
 if __name__ == "__main__":
     params = load_params(sys.argv[1])
     for p in params:
