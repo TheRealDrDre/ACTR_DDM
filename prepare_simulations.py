@@ -98,7 +98,45 @@ class ParamRange():
         else:
             pass
         
+    @property
+    def name(self):
+        return self._name
 
+    @name.setter
+    def name(self, string):
+        if self.is_param_name(string):
+            self._name = string
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, val):
+        if self.is_param_value(val):
+            self._start = val
+
+
+    @property
+    def end(self):
+        return self._end
+
+    
+    @end.setter
+    def end(self, val):
+        if self.is_param_value(val):
+            self._end = val
+
+
+    @property
+    def step(self):
+        return self._step
+
+    @step.setter
+    def step(self, val):
+        if self.is_param_value(val):
+            self._step = val
+    
     def is_param_name(self, string):
         if isinstance(string, str) \
            and len(string) > 1    \
@@ -124,9 +162,16 @@ class ParamRange():
     
     def expand(self):
         """Returns the range as a list"""
-        return list(np.arange(self.start, self.end, self.step))
+        #k = self.start
+        res = [self.start]
+        k = self.start + self.step
+        if self.step > 0:
+            while k <= self.end:
+                res.append(k)
+                k += self.step
+        return list(res)
 
-
+    
 # --------------------------------------------------------------------
 # The Hyper Point
 # --------------------------------------------------------------------
@@ -285,6 +330,25 @@ class HyperSpace():
         """Sets the list of parameters. only ParamRange objects are accepted"""
         P = [x for x in lst if isinstance(x, ParamRange)]
         self._params = P
+
+
+    def get_param(self, name):
+        """Returns the param corresponding to the given name"""
+        for p in self.params:
+            if p.name == name:
+                return p
+
+        return None
+        
+    def set_dimension(self, dimension):
+        """Adds or redefines a new dimension of the hyperspace"""  
+        if isinstance(dimension, ParamRange):
+            if dimension.name not in [x.name for x in self.params]:
+                self.params.append(dimension)
+            else:
+                P = [x for x in self.params if x.name != dimension.name]
+                P.append(dimension)
+                self.params = P
         
     @property
     def num(self):
@@ -307,7 +371,6 @@ class HyperSpace():
         """Sets the starting ID for a simulation"""
         if isinstance(val, int):
             self._start = val
-
             
     @property
     def model(self):
@@ -350,9 +413,19 @@ class HyperSpace():
     #
     # e.g. - cut_across([param1, param2, ..., paramN])
     #  --> N smaller hyperspaces
-    def cut_across(param_list):
+    def cut_across(self, param_name):
         """Returns a series of hyperspaces across the values of given params"""
-        pass
+        p = self.get_param(param_name)
+        vals = p.expand()
+        subparams = [ParamRange(param_name, x, x, 0.0) for x in vals]
+        subspaces = [HyperSpace(self.params, self.num, self.start, self.model) for x in subparams]
+        for p, space in zip(subparams, subspaces):
+            space.set_dimension(p)
+            space.model = "%s_%.3f" % (p.name, p.start)
+
+        #return subparams
+        return subspaces
+        
     
     def divide_into(n):
         """Attempts to devide the parameter space into N subspaces"""
@@ -366,6 +439,12 @@ class HyperSpace():
             res += p.lisp_code
         res += LISP_END
         return res
+
+    def __repr__(self):
+        return "{HS(%d)%s}" % (self.size, self.params)
+
+    def __str__(self):
+        return self.__repr__()
 
 
 # --------------------------------------------------------------------
