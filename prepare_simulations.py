@@ -462,6 +462,11 @@ p = h.points
 
 if __name__ == "__main__":
     params = load_params(sys.argv[1])
-    for p in params:
-        print("%s: %s" % (p.name, p.expand()))
+    if len(params) > 0:
+        hs = HyperSpace(params)
+        hspaces = [hs]
+        if len(params)> 1:
+            hspaces = hs.cut_across(params[0])
+        for j in hspaces:
+            print(hspaces.model)
         
