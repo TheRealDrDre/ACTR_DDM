@@ -32,9 +32,10 @@ def load_params(filename="params.txt"):
     """Loads the param specification and creates the hyperspace"""
     fin = open(filename, 'r')
     params = []
-    for i in fin.readlines():
+    for n, l in enumerate(fin):
+        #print("%d, '%s'" % (n, l))
         # Remove comments that start with '#';
-        var = i
+        var = l
         if "#" in var:
             var = var[0:var.index("#")]
         var = var.split()
@@ -42,7 +43,7 @@ def load_params(filename="params.txt"):
 
         candidate = ParamRange(var[0], var[1], var[2], var[3])
         if candidate is None:
-            print("Error in line: ``%s''', no parameter created")
+            print("Error in line %d: ``%s''', no parameter created" % (n, l))
         else:
             params.append(candidate)
     return [x for x in params if x is not None]
