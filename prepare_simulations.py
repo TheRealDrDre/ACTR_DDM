@@ -65,10 +65,13 @@ def cmbn(lst1, lst2):
 def combinations(lst):
     """Returns the combinations of all the lists in LST"""
     if len(lst) > 0:
-        res = lst[0]
-        for axis in lst[1:]:
-            res = cmbn(res, axis)
-        return res
+        if len(lst) == 1:
+            return [[x] for x in lst[0]]
+        else:
+            res = lst[0]
+            for axis in lst[1:]:
+                res = cmbn(res, axis)
+            return res
     else:
         return []
 
@@ -196,11 +199,11 @@ class HyperPoint(Sanitazable):
                  values,
                  num = 100,
                  start = 0,
-                 model="sim"):
+                 model="hp_simulations"):
         """
         Initializes a hyperspace. Needs a list of params (dimensions)
         """
-
+        #print([parameters, values])
         self._internal = dict(zip(parameters, values))
         self.num = num
         self.start = start
@@ -336,7 +339,7 @@ class HyperPoint(Sanitazable):
     
 class HyperSpace(Sanitazable):
     """Hyper parameter space"""
-    def __init__(self, plist, num = 100, start = 0, model = "model"):
+    def __init__(self, plist, num = 100, start = 0, model = "simulations"):
         self.params = plist
         self.num = num
         self.start = start
@@ -417,7 +420,7 @@ class HyperSpace(Sanitazable):
         names = [p.name for p in self.params]
         values = [p.expand() for p in self.params]
         points = combinations(values)
-        P = [HyperPoint(names, coordinates, num = self.num, model = self.model) for coordinates in points]
+        P = [HyperPoint(names, coordinates, num = self.num) for coordinates in points]
 
         # Give each point a unique start 
         j = self.start
@@ -453,7 +456,7 @@ class HyperSpace(Sanitazable):
         subspaces = [HyperSpace(self.params, self.num, self.start, self.model) for x in subparams]
         for p, space in zip(subparams, subspaces):
             space.set_dimension(p)
-            space.model = "%s_%.3f" % (p.name, p.start)
+            space.model = self.model + "_%s_%.3f" % (p.name, p.start)
 
         return subspaces
         
@@ -513,12 +516,15 @@ def load_params(filename="params.txt"):
             var = var[0:var.index("#")]
         var = var.split()
         var = [x.strip() for x in var]
-
-        candidate = ParamRange(var[0], var[1], var[2], var[3])
-        if candidate is None:
-            print("Error in line %d: ``%s''', no parameter created" % (n, l))
-        else:
-            params.append(candidate)
+        if len(var) == 4:
+            candidate = ParamRange(var[0], var[1], var[2], var[3])
+            if candidate is None:
+                print("Error in line %d: ``%s''', no parameter created" % (n, l))
+            else:
+                params.append(candidate)
+        elif len(var) > 0: 
+            print("Not a valid param definition: Line %d, ``%s''', no parameter created" % (n, l))
+    #print(params)
     return [x for x in params if x is not None]
 
     
@@ -527,8 +533,10 @@ def load_params(filename="params.txt"):
 # --------------------------------------------------------------------
 k1 = ParamRange(":A", 0, 1, 0.1)
 k2 = ParamRange(":B", -2, 2, 0.5)
-h = HyperSpace([k1, k2])
-p = h.points
+h1 = HyperSpace([k1])
+p1 = h1.points
+h2 = HyperSpace([k1, k2])
+p2 = h2.points
 
 # --------------------------------------------------------------------
 # When executing it as a script
@@ -552,8 +560,10 @@ with the notation:
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         params = load_params(sys.argv[1])
+        #print(params)
         if len(params) > 0:
             hs = HyperSpace(params)
+            #print(hs)
             hspaces = [hs]
             if len(params)> 1:
                 hspaces = hs.cut_across(params[0].name)
