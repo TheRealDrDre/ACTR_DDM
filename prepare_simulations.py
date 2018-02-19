@@ -28,26 +28,6 @@ LISP_END = """
 (quit)
 """
 
-def load_params(filename="params.txt"):
-    """Loads the param specification and creates the hyperspace"""
-    fin = open(filename, 'r')
-    params = []
-    for n, l in enumerate(fin):
-        #print("%d, '%s'" % (n, l))
-        # Remove comments that start with '#';
-        var = l
-        if "#" in var:
-            var = var[0:var.index("#")]
-        var = var.split()
-        var = [x.strip() for x in var]
-
-        candidate = ParamRange(var[0], var[1], var[2], var[3])
-        if candidate is None:
-            print("Error in line %d: ``%s''', no parameter created" % (n, l))
-        else:
-            params.append(candidate)
-    return [x for x in params if x is not None]
-
 
     
 def cmbn(lst1, lst2):
@@ -186,14 +166,24 @@ class ParamRange():
 # code.
 # --------------------------------------------------------------------
 
-class HyperPoint():
+class Sanitazable():
+    def sanitize(self, name):
+        """Removes non-printable letters from name string"""
+        return "".join([x.lower() for x in name if x in string.ascii_letters or x in string.digits or x in "_-+=."])
+
+
+class HyperPoint(Sanitazable):
     """Hyperpoint in parameter space"""
     def __init__(self,
                  parameters,
                  values,
                  num = 100,
                  start = 0,
-                 model="model"):
+                 model="sim"):
+        """
+        Initializes a hyperspace. Needs a list of params (dimensions)
+        """
+
         self._internal = dict(zip(parameters, values))
         self.num = num
         self.start = start
@@ -207,39 +197,52 @@ class HyperPoint():
 
     @property
     def num(self):
+        """Number of simulations per hyperpoint"""
         return self._num
 
     @num.setter
     def num(self, val):
+        """
+        Sets the number of simulations per hyperpoint. 
+        Needs to be an int
+        """
         if isinstance(val, int):
             self._num = val
 
     @property
     def start(self):
+        """The starting point of the IDX counter"""
         return self._start
 
     @start.setter
     def start(self, val):
+        """
+        Sets the starting point of the ID counter. 
+        Needs to be an int
+        """
         if isinstance(val, int):
             self._start = val
 
     @property
     def model(self):
+        """The model name (a prefix)"""
         return self._model
 
     @model.setter
     def model(self, name):
+        """Sets the model name (the filename prefix)"""
         if isinstance(name, str):
             self._model = name
             
     def get_dimensions(self):
-        """Returns the names of all dimensions"""
+        """Returns the names of all dimensions in alphabetical order"""
         res = list(self._internal.keys())
         res.sort()
         return res
 
     
     def get_dimension_value(self, name):
+        """Returns the value of a specific dimension (i.e., param)"""
         if name in list(self._internal.keys()):
             return self._internal[name]
 
@@ -252,16 +255,11 @@ class HyperPoint():
     def __str__(self):
         """String representation of the hyperpoint (in Lisp style)"""
         return self.__repr__()
-
-    
-    def sanitize(self, name):
-        """Removes non-printable letters from name string"""
-        return "".join([x.lower() for x in name if x in string.ascii_letters or x in string.digits])
         
 
     @property
     def filename(self):
-        """Generates the name of an output file"""
+        """Generates the (sanitized) name of an output file"""
         params = list(self._internal.keys())
         params.sort()
         fname = self.model + "_"
@@ -275,7 +273,10 @@ class HyperPoint():
 
 
     def lisp_representation(self):
-        """Returns a string representing the HP in Lisp notation"""
+        """
+        Returns a string representing the hyperpoint in Lisp-like
+        notation, e.g. '((x val) (y val) (z val))
+        """
         string = "("
         params = list(self._internal.keys())
         params.sort()
@@ -289,14 +290,17 @@ class HyperPoint():
 
     @property
     def lisp_code(self):
-        """Generates the lisp code that examines this point in parameter space"""
+        """
+        Generates the lisp code that examines model performance in
+        this hyperpoint of the parameter space
+        """
         return LISP_SIMS % (self.num, self, self.start, self.filename)
 
     
     def belongs_to_hyperplane(self, hyperplane):
         """
-A point belongs to an hyperplane if it contains all the dimensions 
-and values of the plane.
+        A point belongs to an hyperplane if it contains all the 
+        dimensions and values of the plane.
         """
         for p in hyperplane.get_dimensions():
             if self.get_dimension_value(p) != hyperplane.get_dimension_value(p):
@@ -313,7 +317,7 @@ and values of the plane.
 # --------------------------------------------------------------------
             
     
-class HyperSpace():
+class HyperSpace(Sanitazable):
     """Hyper parameter space"""
     def __init__(self, plist, num = 100, start = 0, model = "model"):
         self.params = plist
@@ -328,7 +332,10 @@ class HyperSpace():
 
     @params.setter
     def params(self, lst):
-        """Sets the list of parameters. only ParamRange objects are accepted"""
+        """
+        Sets the list of parameters. 
+        only 'ParamRange' objects are accepted
+        """
         P = [x for x in lst if isinstance(x, ParamRange)]
         self._params = P
 
@@ -358,7 +365,10 @@ class HyperSpace():
 
     @num.setter
     def num(self, val):
-        """Sets the number of simulations. Only int vals are accepted"""
+        """
+        Sets the number of simulations. 
+        Only int vals are accepted
+        """
         if isinstance(val, int):
             self._num = val
 
@@ -415,7 +425,11 @@ class HyperSpace():
     # e.g. - cut_across([param1, param2, ..., paramN])
     #  --> N smaller hyperspaces
     def cut_across(self, param_name):
-        """Returns a series of hyperspaces across the values of given params"""
+        """
+        Returns a series of hyperspaces across the values 
+        of given parameter. Useful to create multi-thread 
+        simulations.
+        """
         p = self.get_param(param_name)
         vals = p.expand()
         subparams = [ParamRange(param_name, x, x, 0.0) for x in vals]
@@ -424,30 +438,73 @@ class HyperSpace():
             space.set_dimension(p)
             space.model = "%s_%.3f" % (p.name, p.start)
 
-        #return subparams
         return subspaces
         
     
     def divide_into(n):
-        """Attempts to devide the parameter space into N subspaces"""
+        """
+        Attempts to devide the parameter space into N subspaces
+        (current unimplemented)
+        """
         pass
 
     @property
     def code(self):
-        """Generates the code that explores the entire hyperspace"""
+        """Returns the code that explores the entire hyperspace"""
         res = LISP_INTRO
         for p in self.points:
             res += p.lisp_code
         res += LISP_END
         return res
 
+    @property
+    def filename(self):
+        """Generates its own filename"""
+        return self.sanitize(self.model) + ".lisp"
+
+    def save_code(self):
+        """Saves the code on a file named after its own space"""
+        fout = open(self.filename, 'w')
+        fout.write(self.code)
+        fout.flush()
+        fout.close()
+    
     def __repr__(self):
+        """A condensed string representation of the hyperspace""" 
         return "{HS(%d)%s}" % (self.size, self.params)
 
     def __str__(self):
+        """A condensed string representation of the hyperspace"""
         return self.__repr__()
 
 
+# --------------------------------------------------------------------
+# load_params
+# --------------------------------------------------------------------
+# A simple function that loads parameters from a text file
+# --------------------------------------------------------------------
+
+def load_params(filename="params.txt"):
+    """Loads the param specification and creates the hyperspace"""
+    fin = open(filename, 'r')
+    params = []
+    for n, l in enumerate(fin):
+        #print("%d, '%s'" % (n, l))
+        # Remove comments that start with '#';
+        var = l
+        if "#" in var:
+            var = var[0:var.index("#")]
+        var = var.split()
+        var = [x.strip() for x in var]
+
+        candidate = ParamRange(var[0], var[1], var[2], var[3])
+        if candidate is None:
+            print("Error in line %d: ``%s''', no parameter created" % (n, l))
+        else:
+            params.append(candidate)
+    return [x for x in params if x is not None]
+
+    
 # --------------------------------------------------------------------
 # TEST
 # --------------------------------------------------------------------
@@ -460,13 +517,32 @@ p = h.points
 # When executing it as a script
 # --------------------------------------------------------------------
 
+HELP = """
+Usage:
+   %s <paramfile>
+
+Where <paramfile> is a file describing the parameter space
+with the notation:
+
+   param1 start end step
+   param2 start end step
+   ...
+   paramZ start end step 
+
+(comments are accepted with '#' mark)
+"""
+
 if __name__ == "__main__":
-    params = load_params(sys.argv[1])
-    if len(params) > 0:
-        hs = HyperSpace(params)
-        hspaces = [hs]
-        if len(params)> 1:
-            hspaces = hs.cut_across(params[0])
-        for j in hspaces:
-            print(hspaces.model)
+    if len(sys.argv) == 2:
+        params = load_params(sys.argv[1])
+        if len(params) > 0:
+            hs = HyperSpace(params)
+            hspaces = [hs]
+            if len(params)> 1:
+                hspaces = hs.cut_across(params[0].name)
+            for j in hspaces:
+                j.save_code()
+
+    else:
+        print(HELP % sys.argv[0])
         
