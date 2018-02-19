@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # ------------------------------------------------------------------ #
-# GENERATE-SIMS.py
+# PREPARE-SIMULATIONS.py
 # ------------------------------------------------------------------ #
 # Generates one Lisp file for every point in the hyperparameter
 # space. The simulations can then be run in parallel on multi-core
 # architectures
+# ------------------------------------------------------------------ #
+#
+#   (c) 2018, Andrea Stocco
+#             University of Washington,
+#             Seattle, WA 98195
+#             Email: stocco@uw.edu
+#
 # ------------------------------------------------------------------ #
 
 import numpy as np
@@ -29,8 +36,12 @@ LISP_END = """
 """
 
 
-    
+# --------------------------------------------------------------------
+# COMBINATORIAL FUNCTIONS
+# --------------------------------------------------------------------
+
 def cmbn(lst1, lst2):
+    """Generates the cartesian product of all elements of two lists"""
     res = []
     for a in lst1:
         for b in lst2:
@@ -52,7 +63,7 @@ def cmbn(lst1, lst2):
 
 
 def combinations(lst):
-    """Returns the permutations of all the lists in LST"""
+    """Returns the combinations of all the lists in LST"""
     if len(lst) > 0:
         res = lst[0]
         for axis in lst[1:]:
@@ -62,6 +73,12 @@ def combinations(lst):
         return []
 
 
+# --------------------------------------------------------------------
+# ParamRange
+# ---------------------------------------------------------------------
+# Defines a parameter (i.e., a dimension in hyperspace) and its range
+# --------------------------------------------------------------------
+    
 class ParamRange():
     """Defines a parameter range in abstract terms"""
     def __init__(self, name, start, end, step):
