@@ -21,7 +21,7 @@ import functools
 import operator
 
 LISP_INTRO = """
-(load "/actr/actr7/load-act-r.lisp")
+(load "/projects/actr/actr7/load-act-r.lisp")
 (load "2afc-device.lisp")
 (load "2afc-model.lisp")
 (load "2afc-simulations.lisp")

@@ -23,7 +23,7 @@
 				       (format nil "~A" x)))
 				  (mapcar #'first params))
 			  (list "stim" "response" "rt"))))
-					    
+    (format t "Beginning simulations in hyperpoint ~A" params)
     (dotimes (i n (append (list colnames) (reverse results)))
       (let ((p (make-instance '2afc-task)))
 	;;(suppress-warnings (reload))
@@ -68,4 +68,5 @@
 		       :if-exists :append
 		       :if-does-not-exist :create)
     (dolist (row table)
-      (format out "~{~a~^,~}~%" row))))
+      (format out "~{~a~^,~}~%" row))
+    (finish-output out)))
