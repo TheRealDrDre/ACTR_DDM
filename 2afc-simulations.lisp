@@ -23,7 +23,7 @@
 				       (format nil "~A" x)))
 				  (mapcar #'first params))
 			  (list "stim" "response" "rt"))))
-    (format t "Beginning simulations in hyperpoint ~A" (mapcar #'second params))
+    (format t "Beginning simulations in hyperpoint ~{~,2f~^, ~}~%" (mapcar #'second params))
     (dotimes (i n (append (list colnames) (reverse results)))
       (let ((p (make-instance '2afc-task)))
 	;;(suppress-warnings (reload))
@@ -39,7 +39,7 @@
 
 	;; Do the simulations
 
-	(run 3000)
+	(run 1000000)
 
 	;; Create a list of trial-by-trial performance
 	;; (with the corresponding parameter values)
