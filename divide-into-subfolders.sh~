@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+i = 0
+
+for k in {0..15..1}; do
+    mkdir simulations01_redux_${k}
+done
+
+for f in /projects/actr/models/ACTR_DDM/simulations01_redux/*lisp; do
+    
+    n=$((i/46))
+    cp $f simulations01_redux_${n}
+    i=$((i+1))
+done

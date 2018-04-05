@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+i = 0
+c = 0
+for k in 
+for j in /projects/actr/models/ACTR_DDM/simulations01_redux/*lisp; do
+    mkdir 
+done
